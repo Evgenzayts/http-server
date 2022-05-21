@@ -12,6 +12,7 @@
 #include <iostream>
 #include <shared_mutex>
 #include <fstream>
+#include <sstream>
 
 using json = nlohmann::json;
 
@@ -24,6 +25,7 @@ class InfoJson {
   void LoadInfo() {
       std::ifstream file(_path_suggestions);
       file >> _all_suggest;
+      file.close();
   }
 
   [[nodiscard]] json GetJson() const {
@@ -37,7 +39,7 @@ class Suggestion {
   json _response_suggest;
 
  public:
-  explicit Suggestion(std::shared_ptr<InfoJson>& info_json);
+  explicit Suggestion(const std::shared_ptr<InfoJson>& info_json);
 
   json GetSuggest(json& input_json);
 

@@ -7,13 +7,14 @@
 http_connection::http_connection(tcp::socket socket)
     :  _socket(std::move(socket)) {}
 
-void http_connection::start(std::shared_ptr<std::timed_mutex>& mutex,
-                            std::shared_ptr<InfoJson>& info_json) {
+void http_connection::start(const std::shared_ptr<std::timed_mutex>& mutex,
+                            const std::shared_ptr<InfoJson>& info_json) {
   request_read(mutex, info_json);
   check_deadline();
 }
-void http_connection::request_read(std::shared_ptr<std::timed_mutex>& mutex,
-                                   std::shared_ptr<InfoJson>& info_json) {
+void http_connection::request_read(
+    const std::shared_ptr<std::timed_mutex>& mutex,
+    const std::shared_ptr<InfoJson>& info_json) {
   auto self = shared_from_this();
 
   http::async_read(_socket,
@@ -28,8 +29,9 @@ void http_connection::request_read(std::shared_ptr<std::timed_mutex>& mutex,
                    } );
 }
 
-void http_connection::request_working(std::shared_ptr<std::timed_mutex>& mutex,
-                                      std::shared_ptr<InfoJson>& info_json) {
+void http_connection::request_working(
+    const std::shared_ptr<std::timed_mutex>& mutex,
+    const std::shared_ptr<InfoJson>& info_json) {
   _response.version(_request.version());
   _response.keep_alive(false);
 
@@ -54,8 +56,9 @@ void http_connection::request_working(std::shared_ptr<std::timed_mutex>& mutex,
   response_send();
 }
 
-void http_connection::response_create(std::shared_ptr<std::timed_mutex>& mutex,
-                                      std::shared_ptr<InfoJson>& info_json) {
+void http_connection::response_create(
+    const std::shared_ptr<std::timed_mutex>& mutex,
+    const std::shared_ptr<InfoJson>& info_json) {
   if (_request.target() == TARGET) {
     _response.set(http::field::content_type, "application/json");
 
@@ -101,11 +104,11 @@ void http_connection::check_deadline() {
 }
 
 void http_server(tcp::acceptor& acceptor, tcp::socket& socket) {
-  std::shared_ptr<std::timed_mutex> mutex = std::make_shared<std::timed_mutex>();
+  std::shared_ptr<std::timed_mutex> mutex =
+      std::make_shared<std::timed_mutex>();
   std::shared_ptr<InfoJson> info_json = std::make_shared<InfoJson>();
-  mutex->lock();
+
   info_json->LoadInfo();
-  mutex->unlock();
 
   acceptor.async_accept(socket,
                         [&](beast::error_code error_code)

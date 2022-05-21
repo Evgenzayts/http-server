@@ -39,16 +39,16 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
  public:
   explicit http_connection(tcp::socket socket);
 
-  void start(std::shared_ptr<std::timed_mutex>& mutex,
-             std::shared_ptr<InfoJson>& info_json); // Initiate the asynchronous operations associated with the connection
+  void start(const std::shared_ptr<std::timed_mutex>& mutex,
+             const std::shared_ptr<InfoJson>& info_json); // Initiate the asynchronous operations associated with the connection
 
  private:
-  void request_read(std::shared_ptr<std::timed_mutex>& mutex,
-                    std::shared_ptr<InfoJson>& info_json);    // Asynchronously receive a complete request message
-  void request_working(std::shared_ptr<std::timed_mutex>& mutex,
-                       std::shared_ptr<InfoJson>& info_json); // Determine what needs to be done with the request message
-  void response_create(std::shared_ptr<std::timed_mutex>& mutex,
-                       std::shared_ptr<InfoJson>& info_json); // Construct a response message based on the program state
+  void request_read(const std::shared_ptr<std::timed_mutex>& mutex,
+                    const std::shared_ptr<InfoJson>& info_json);    // Asynchronously receive a complete request message
+  void request_working(const std::shared_ptr<std::timed_mutex>& mutex,
+                       const std::shared_ptr<InfoJson>& info_json); // Determine what needs to be done with the request message
+  void response_create(const std::shared_ptr<std::timed_mutex>& mutex,
+                       const std::shared_ptr<InfoJson>& info_json); // Construct a response message based on the program state
   void response_send();   // Asynchronously transmit the response message
   void check_deadline();  // Check whether we have spent enough time on this connection
 };
