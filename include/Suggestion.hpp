@@ -1,6 +1,4 @@
-//
-// Created by ubuntu on 5/20/22.
-//
+// Copyright 2022 Evgenzayts evgenzaytsev2002@yandex.ru
 
 #ifndef INCLUDE_SUGGESTION_HPP_
 #define INCLUDE_SUGGESTION_HPP_
@@ -12,7 +10,6 @@
 #include <iostream>
 #include <shared_mutex>
 #include <fstream>
-#include <sstream>
 
 using json = nlohmann::json;
 
@@ -25,12 +22,12 @@ class InfoJson {
   void LoadInfo() {
       std::ifstream file(_path_suggestions);
       file >> _all_suggest;
+      file.close();
 
       SortJson();
   }
 
   [[nodiscard]] json GetJson() const {
-    std::cout << _all_suggest[0].at("id");
     return _all_suggest;
   }
 

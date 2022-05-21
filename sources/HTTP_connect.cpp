@@ -1,37 +1,43 @@
-//
-// Created by ubuntu on 5/16/22.
-//
+// Copyright 2022 Evgenzayts evgenzaytsev2002@yandex.ru
 
 #include "HTTP_connect.hpp"
+
+const std::shared_ptr<std::timed_mutex> mutex =
+    std::make_shared<std::timed_mutex>();
+std::shared_ptr<InfoJson> info_json = std::make_shared<InfoJson>();
+
+void UpdateInfo() {
+  while (true) {
+    mutex->lock();
+    info_json->LoadInfo();
+    mutex->unlock();
+
+    std::this_thread::sleep_for(std::chrono::minutes(15));
+  }
+}
 
 http_connection::http_connection(tcp::socket socket)
     :  _socket(std::move(socket)) {}
 
-void http_connection::start(const std::shared_ptr<std::timed_mutex>& mutex,
-                            const std::shared_ptr<InfoJson>& info_json) {
-  request_read(mutex, info_json);
+void http_connection::start() {
+  request_read();
   check_deadline();
 }
-void http_connection::request_read(
-    const std::shared_ptr<std::timed_mutex>& mutex,
-    const std::shared_ptr<InfoJson>& info_json) {
+void http_connection::request_read() {
   auto self = shared_from_this();
 
   http::async_read(_socket,
                    _buffer,
                    _request,
-                   [self, &mutex, &info_json]
-                   (beast::error_code error_code,
+                   [self](beast::error_code error_code,
                           std::size_t bytes_transferred)
                    {
                      boost::ignore_unused(bytes_transferred);
-                     if(!error_code) self->request_working(mutex, info_json);
+                     if(!error_code) self->request_working();
                    } );
 }
 
-void http_connection::request_working(
-    const std::shared_ptr<std::timed_mutex>& mutex,
-    const std::shared_ptr<InfoJson>& info_json) {
+void http_connection::request_working() {
   _response.version(_request.version());
   _response.keep_alive(false);
 
@@ -40,7 +46,7 @@ void http_connection::request_working(
     case http::verb::post:
       _response.result(http::status::ok);
       _response.set(http::field::server, "Beast");
-      response_create(mutex, info_json);
+      response_create();
       break;
 
     default:
@@ -56,19 +62,17 @@ void http_connection::request_working(
   response_send();
 }
 
-void http_connection::response_create(
-    const std::shared_ptr<std::timed_mutex>& mutex,
-    const std::shared_ptr<InfoJson>& info_json) {
+void http_connection::response_create() {
   if (_request.target() == TARGET) {
     _response.set(http::field::content_type, "application/json");
 
     mutex->lock();
     auto suggestion = new Suggestion(info_json->GetJson());
     mutex->unlock();
-    json input_json = json::parse(_request.body());
 
+    json input_json = json::parse(_request.body());
     beast::ostream(_response.body()) <<
-        suggestion->GetSuggest(input_json);
+        suggestion->GetSuggest(input_json).dump(3);
   } else {
     _response.result(http::status::not_found);
     _response.set(http::field::content_type, "text/plain");
@@ -104,18 +108,16 @@ void http_connection::check_deadline() {
 }
 
 void http_server(tcp::acceptor& acceptor, tcp::socket& socket) {
-  std::shared_ptr<std::timed_mutex> mutex =
-      std::make_shared<std::timed_mutex>();
-  std::shared_ptr<InfoJson> info_json = std::make_shared<InfoJson>();
-
   info_json->LoadInfo();
+
+  std::thread{UpdateInfo}.detach();
 
   acceptor.async_accept(socket,
                         [&](beast::error_code error_code)
                         {
                           if(!error_code)
                             std::make_shared<http_connection>(
-                                std::move(socket) )->start(mutex, info_json);
+                                std::move(socket) )->start();
                           http_server(acceptor, socket);
                         } );
 }

@@ -1,6 +1,4 @@
-//
-// Created by ubuntu on 5/16/22.
-//
+// Copyright 2022 Evgenzayts evgenzaytsev2002@yandex.ru
 
 #ifndef INCLUDE_HTTP_CONNECT_HPP_
 #define INCLUDE_HTTP_CONNECT_HPP_
@@ -16,6 +14,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 #include "Suggestion.hpp"
 
 #define TARGET "/v1/api/suggest"
@@ -27,9 +26,8 @@ using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 
 class http_connection : public std::enable_shared_from_this<http_connection> {
  private:
-  tcp::socket _socket;                          // The socket for the currently connected client
-  beast::flat_buffer _buffer{8192};        // The buffer for performing reads
-  //http::request<http::dynamic_body> _request;
+  tcp::socket _socket;         // The socket for the currently connected client
+  beast::flat_buffer _buffer{8192};    // The buffer for performing reads
   http::request<http::string_body> _request;    // The request message
   http::response<http::dynamic_body> _response; // The response message
   // The timer for putting a deadline on connection processing
@@ -39,18 +37,14 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
  public:
   explicit http_connection(tcp::socket socket);
 
-  void start(const std::shared_ptr<std::timed_mutex>& mutex,
-             const std::shared_ptr<InfoJson>& info_json); // Initiate the asynchronous operations associated with the connection
+  void start(); // Initiate the asynchronous operations
 
  private:
-  void request_read(const std::shared_ptr<std::timed_mutex>& mutex,
-                    const std::shared_ptr<InfoJson>& info_json);    // Asynchronously receive a complete request message
-  void request_working(const std::shared_ptr<std::timed_mutex>& mutex,
-                       const std::shared_ptr<InfoJson>& info_json); // Determine what needs to be done with the request message
-  void response_create(const std::shared_ptr<std::timed_mutex>& mutex,
-                       const std::shared_ptr<InfoJson>& info_json); // Construct a response message based on the program state
+  void request_read();    // Asynchronously receive a complete request message
+  void request_working(); // Determine what needs to be done with the request
+  void response_create(); // Construct a response message
   void response_send();   // Asynchronously transmit the response message
-  void check_deadline();  // Check whether we have spent enough time on this connection
+  void check_deadline();  // Check enough time on this connection
 };
 
 void http_server(tcp::acceptor& acceptor, tcp::socket& socket); // loop forever accepting new connections

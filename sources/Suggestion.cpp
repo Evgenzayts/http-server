@@ -1,6 +1,5 @@
-//
-// Created by ubuntu on 5/20/22.
-//
+// Copyright 2022 Evgenzayts evgenzaytsev2002@yandex.ru
+
 #include "Suggestion.hpp"
 
 Suggestion::Suggestion(json info_json) {
@@ -14,7 +13,7 @@ nlohmann::json Suggestion::GetSuggest(json& input_json) {
 }
 
 void Suggestion::MakeSuggest(json& input_suggest) {
-  _response_suggest["suggestions"] = "";
+  _response_suggest["suggestions"] = {};
 
   boost::optional<std::string> input_str_obj =
       input_suggest.at("input").get<std::string>();
