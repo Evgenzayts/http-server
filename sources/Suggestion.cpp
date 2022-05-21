@@ -3,9 +3,8 @@
 //
 #include "Suggestion.hpp"
 
-Suggestion::Suggestion(const std::shared_ptr<InfoJson>& info_json) {
-  _all_suggest = { };
-  SortSuggest(info_json->GetJson());
+Suggestion::Suggestion(json info_json) {
+  _all_suggest = info_json;
 }
 
 nlohmann::json Suggestion::GetSuggest(json& input_json) {
@@ -33,11 +32,3 @@ void Suggestion::MakeSuggest(json& input_suggest) {
     }
   }
 }
-void Suggestion::SortSuggest(json json_for_sort) {
-    std::sort(json_for_sort.begin(), json_for_sort.end(),
-              [](const json& a, const json& b) -> bool {
-                return a.at("cost") < b.at("cost");
-              } );
-  _all_suggest = json_for_sort;
-}
-

@@ -25,11 +25,21 @@ class InfoJson {
   void LoadInfo() {
       std::ifstream file(_path_suggestions);
       file >> _all_suggest;
-      file.close();
+
+      SortJson();
   }
 
   [[nodiscard]] json GetJson() const {
+    std::cout << _all_suggest[0].at("id");
     return _all_suggest;
+  }
+
+ private:
+  void SortJson() {
+    std::sort(_all_suggest.begin(), _all_suggest.end(),
+              [](const json& a, const json& b) -> bool {
+                return a.at("cost") < b.at("cost");
+              } );
   }
 };
 
@@ -39,13 +49,12 @@ class Suggestion {
   json _response_suggest;
 
  public:
-  explicit Suggestion(const std::shared_ptr<InfoJson>& info_json);
+  explicit Suggestion(json info_json);
 
   json GetSuggest(json& input_json);
 
  private:
   void MakeSuggest(json& input_suggest);
-  void SortSuggest(json json_for_sort);
 };
 
 #endif  // INCLUDE_SUGGESTION_HPP_

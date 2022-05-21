@@ -63,7 +63,7 @@ void http_connection::response_create(
     _response.set(http::field::content_type, "application/json");
 
     mutex->lock();
-    auto suggestion = new Suggestion(info_json);
+    auto suggestion = new Suggestion(info_json->GetJson());
     mutex->unlock();
     json input_json = json::parse(_request.body());
 
