@@ -47,6 +47,7 @@ class http_connection : public std::enable_shared_from_this<http_connection> {
   void check_deadline();  // Check enough time on this connection
 };
 
-void http_server(tcp::acceptor& acceptor, tcp::socket& socket); // loop forever accepting new connections
+// Loop forever accepting new connections
+void http_server(tcp::acceptor& acceptor, tcp::socket& socket);
 
 #endif  // INCLUDE_HTTP_CONNECT_HPP_

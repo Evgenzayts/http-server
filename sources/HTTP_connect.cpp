@@ -33,15 +33,15 @@ void http_connection::request_read() {
                           std::size_t bytes_transferred)
                    {
                      boost::ignore_unused(bytes_transferred);
-                     if(!error_code) self->request_working();
-                   } );
+                     if (!error_code) self->request_working();
+                   });
 }
 
 void http_connection::request_working() {
   _response.version(_request.version());
   _response.keep_alive(false);
 
-  switch(_request.method())
+  switch (_request.method())
   {
     case http::verb::post:
       _response.result(http::status::ok);
@@ -92,7 +92,7 @@ void http_connection::response_send() {
                       self->_socket.shutdown(tcp::socket::shutdown_send,
                                              error_code);
                       self->_deadline.cancel();
-                    } );
+                    });
 }
 
 void http_connection::check_deadline() {
@@ -100,11 +100,11 @@ void http_connection::check_deadline() {
 
   _deadline.async_wait([self](beast::error_code error_code)
                        {
-                         if(!error_code) {
+                         if (!error_code) {
                            // Close socket to cancel any outstanding operation
                            self->_socket.close(error_code);
                          }
-                       } );
+                       });
 }
 
 void http_server(tcp::acceptor& acceptor, tcp::socket& socket) {
@@ -115,9 +115,9 @@ void http_server(tcp::acceptor& acceptor, tcp::socket& socket) {
   acceptor.async_accept(socket,
                         [&](beast::error_code error_code)
                         {
-                          if(!error_code)
+                          if (!error_code)
                             std::make_shared<http_connection>(
                                 std::move(socket) )->start();
                           http_server(acceptor, socket);
-                        } );
+                        });
 }

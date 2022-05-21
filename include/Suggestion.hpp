@@ -10,6 +10,8 @@
 #include <iostream>
 #include <shared_mutex>
 #include <fstream>
+#include <string>
+#include <algorithm>
 
 using json = nlohmann::json;
 
@@ -36,7 +38,7 @@ class InfoJson {
     std::sort(_all_suggest.begin(), _all_suggest.end(),
               [](const json& a, const json& b) -> bool {
                 return a.at("cost") < b.at("cost");
-              } );
+              });
   }
 };
 
